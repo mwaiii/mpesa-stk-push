@@ -2,6 +2,13 @@ exports.handler = async function (event) {
   try {
     const { phone, amount } = JSON.parse(event.body);
 
+    let cleanPhone = phone.replace(/\s+/g, "");
+    if (cleanPhone.startsWith("0")) {
+      cleanPhone = "254" + cleanPhone.slice(1);
+    } else if (cleanPhone.startsWith("+")) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+
     const consumerKey = process.env.CONSUMER_KEY;
     const consumerSecret = process.env.CONSUMER_SECRET;
     const shortcode = "174379";
@@ -19,35 +26,4 @@ exports.handler = async function (event) {
       .toISOString()
       .replace(/[^0-9]/g, "")
       .slice(0, 14);
-    const password = Buffer.from(shortcode + passkey + timestamp).toString("base64");
-
-    const stkRes = await fetch(
-      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          BusinessShortCode: shortcode,
-          Password: password,
-          Timestamp: timestamp,
-          TransactionType: "CustomerPayBillOnline",
-          Amount: amount,
-          PartyA: phone,
-          PartyB: shortcode,
-          PhoneNumber: phone,
-          CallBackURL: "https://example.com/callback",
-          AccountReference: "TestPayment",
-          TransactionDesc: "Test",
-        }),
-      }
-    );
-    const stkData = await stkRes.json();
-
-    return { statusCode: 200, body: JSON.stringify(stkData) };
-  } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
-  }
-};
+    const password = Buffer.from(shortcode
