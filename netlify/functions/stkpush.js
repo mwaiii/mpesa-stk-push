@@ -26,4 +26,4 @@ exports.handler = async function (event) {
       .toISOString()
       .replace(/[^0-9]/g, "")
       .slice(0, 14);
-    const password = Buffer.from(shortcode
+        const password = Buffer.from(shortcode + passkey + timestamp).toString("base64");
