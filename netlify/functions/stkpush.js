@@ -25,9 +25,6 @@ exports.handler = async function (event) {
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
     const password = Buffer.from(shortcode + passkey + timestamp).toString("base64");
 
-    const siteUrl = "https://" + event.headers.host;
-    const callbackUrl = siteUrl + "/.netlify/functions/callback";
-
     const stkRes = await fetch(
       "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
       {
@@ -45,7 +42,7 @@ exports.handler = async function (event) {
           PartyA: cleanPhone,
           PartyB: shortcode,
           PhoneNumber: cleanPhone,
-          CallBackURL: callbackUrl,
+          CallBackURL: "https://example.com/callback",
           AccountReference: "TestPayment",
           TransactionDesc: "Test"
         })
