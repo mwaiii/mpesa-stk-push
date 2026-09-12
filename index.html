@@ -30,25 +30,9 @@
 
       if (data.ResponseCode === "0") {
         document.getElementById("status").innerText = "Check your phone for the PIN prompt!";
-        pollStatus(data.CheckoutRequestID);
       } else {
         document.getElementById("status").innerText = "Error: " + JSON.stringify(data);
       }
-    }
-
-    function pollStatus(checkoutId) {
-      const interval = setInterval(async function () {
-        const res = await fetch("/.netlify/functions/status?id=" + checkoutId);
-        const data = await res.json();
-
-        if (data.status === "paid") {
-          document.getElementById("status").innerText = "✅ Payment received!";
-          clearInterval(interval);
-        } else if (data.status === "failed") {
-          document.getElementById("status").innerText = "❌ Payment failed or cancelled.";
-          clearInterval(interval);
-        }
-      }, 3000);
     }
   </script>
 </body>
