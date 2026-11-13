@@ -11,22 +11,27 @@ exports.handler = async function (event) {
 
     const consumerKey = process.env.CONSUMER_KEY;
     const consumerSecret = process.env.CONSUMER_SECRET;
-    const shortcode = "174379";
-    const passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
+    const shortcode = process.env.SHORTCODE;
+    const tillNumber = process.env.TILL_NUMBER;
+    const passkey = process.env.PASSKEY;
 
     const auth = Buffer.from(consumerKey + ":" + consumerSecret).toString("base64");
     const tokenRes = await fetch(
-      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+      "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
       { headers: { Authorization: "Basic " + auth } }
     );
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
 
+    if (!accessToken) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Token failed", details: tokenData }) };
+    }
+
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
     const password = Buffer.from(shortcode + passkey + timestamp).toString("base64");
 
     const stkRes = await fetch(
-      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+      "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
       {
         method: "POST",
         headers: {
@@ -37,14 +42,14 @@ exports.handler = async function (event) {
           BusinessShortCode: shortcode,
           Password: password,
           Timestamp: timestamp,
-          TransactionType: "CustomerPayBillOnline",
+          TransactionType: "CustomerBuyGoodsOnline",
           Amount: amount,
           PartyA: cleanPhone,
-          PartyB: shortcode,
+          PartyB: tillNumber,
           PhoneNumber: cleanPhone,
           CallBackURL: "https://example.com/callback",
-          AccountReference: "TestPayment",
-          TransactionDesc: "Test"
+          AccountReference: "SkinAnalysis",
+          TransactionDesc: "Skin analysis"
         })
       }
     );
